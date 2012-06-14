@@ -9,7 +9,12 @@ var express = require('express'),
     handlebars = require('handlebars');
 
 var app = module.exports = express.createServer();
+var bundle = browserify(__dirname + '/public/js/index.js', {watch: true, cache: false});
 
+bundle.register('.html', function (body) {
+    console.log('hbs detect', body, handlebars.precompile(body));
+    return "return (" + handlebars.precompile(body) + ")();";
+});
 // Configuration
 
 app.configure(function(){
@@ -23,11 +28,6 @@ app.configure(function(){
 
 app.configure('development', function(){
     app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-    var bundle = browserify(__dirname + '/public/js/index.js', {watch: true, cache: false});
-    bundle.register('.hbs', function (body) {
-        console.log('hbs detect', body, handlebars.precompile(body));
-        return "return " + handlebars.precompile(body);
-    });
     app.use(bundle);
 });
 
